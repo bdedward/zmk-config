@@ -64,17 +64,7 @@
                 };
 
                 
-                tri_layer {
-                        if-layers = <1 2>;
-                        then-layer = <3>;
-
-                        bindings = <
-                        &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
-                        &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
-                        &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
-                        &trans &trans &trans &trans &trans &trans
-                        >;
-                };
+                
                 
         };
 };
