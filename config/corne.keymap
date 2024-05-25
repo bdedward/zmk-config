@@ -27,15 +27,15 @@
                 };
                 lower_layer {
 // -----------------------------------------------------------------------------------------
-// |  TAB |  F1  |  F2  |  F3  |  F4  |  F5  |   |  F6  |  F7  |  F8  |  F9  |  F10  | BKSP |
-// |  CAPS|   1  |  2  |  3  |  4  |  5      |   |  6   |   7  |   8  |   9  |    0  |      |
-// |  CTRL| BTCLR| BT1 | BT2 | BT3 | BT4     |   | HOME | LFT  | DWN  |  UP  | RGT   |   END|
-//                    | SHIFT | SPC |    |   |   | ENT | ALT |
+// |  F1  |  F2  |  F3  |  F4  |  F5  | F6  |   7  |  8  |  9  |       |        | DEL   |
+// |  F7|   F8  |  F9  |  F10  |  F11 | F12 |   4  |  5  |  6  |  HOME |  UP    | END   |
+// |  BTCLR| BT1 | BT2 | BT3 | BT4| | BT5|  |   1  |  2  |  3  |  LEFT | DOWN   | RIGHT |
+//                    | SHIFT | SPC |    |  |   | ENT |   0 |
                         bindings = <
-   &kp TAB  &kp F1  &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp BSPC
-   &kp CAPSLOCK &kp N1 &kp N2 &kp N3 &kp N4  &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &trans
-   &kp LCTRL &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3  &kp HOME &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp END
-                                    &kp LSHFT &kp SPACE  &trans              &trans  &kp RET  &kp RALT
+   &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp N7 &kp N8 &kp N9 &trans &trans &kp DEL
+   &kp F7 &kp F8 &kp F9 &kp F10  &kp F11 &kp F12 &kp N4 &kp N5 &kp N6 &kp HOME &kp UP &kp END
+   &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &kp N1 &kp N2 &kp N3 &kp LEFT &kp DOWN &kp RIGHT
+                                    &kp LSHFT &kp SPACE  &trans              &trans  &kp RET  &kp N0
                         >;
                 };
 
