@@ -62,13 +62,13 @@
    &td1   &kp Q &kp W &kp E &kp R &kp T   &kp Y &kp U  &kp I     &kp O   &kp P    &kp BSPC
    &td2  &kp A &kp S &kp D &kp F &kp G   &kp H &kp J  &kp K     &kp L   &kp SEMI &td3 
    &kp LCTRL &kp Z &kp X &kp C &kp V &kp B   &kp N &kp M  &kp COMMA &kp DOT &kp FSLH &kp DEL
-                  &kp LALT &kp SPACE &mo 1  &mo 2 &kp RET  &kp GUI
+                  &kp LALT &kp SPACE &mo 1  &mo 2 &kp RET  &kp WIN
                         >;
                 };
                 lower_layer {
 // -----------------------------------------------------------------------------------------
-// |  1  |  2  |  3  |  4  |  5  | 6  |   7  |  8  |  9  |    0   |             | DEL   |
-// |  F1|   F2  |  F3  |  F4  |  F5 | F6 |   F7  |  F8  |  F9  |  HOME |  UP    | END   |
+// |  |1  |  2  |  3  |  4  |  5  | 6  |   7  |  8  |  9  |    0   |             | DEL   |
+// |  |F1|   F2  |  F3  |  F4  |  F5 | F6 |   F7  |  F8  |  F9  |  HOME |  UP    | END   |
 // |  | BTCLR| BT1 | BT2 | BT3 | BT4||      |     |    |    |  LEFT    | DOWN   | RIGHT |
 //                    | SHIFT | SPC |    |  |   | 0 |   ENT |
                         bindings = <
