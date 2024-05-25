@@ -9,6 +9,16 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
+        combos {
+                compatible = "zmk,combos";
+                combo_esc {
+                timeout-ms = <50>;
+                key-positions = <0 1>;
+                bindings = <&kp ESC>;
+                };
+        };
+
+
         keymap {
                 compatible = "zmk,keymap";
 
@@ -52,5 +62,19 @@
                              &kp LSHFT &kp SPACE &trans         &trans  &kp RET  &kp RALT
                         >;
                 };
+
+                
+                tri_layer {
+                        if-layers = <1 2>;
+                        then-layer = <3>;
+
+                        bindings = <
+                        &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
+                        &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
+                        &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
+                        &trans &trans &trans &trans &trans &trans
+                        >;
+                };
+                
         };
 };
