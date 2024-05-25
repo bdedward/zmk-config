@@ -10,18 +10,32 @@
 
 / {
         behaviors {
-                td0: tap_dance_0 {
+                td0: BSPC_DEL{
                 compatible = "zmk,behavior-tap-dance";
                 #binding-cells = <0>;
-                tapping-term-ms = <200>;
+                tapping-term-ms = <100>;
                 bindings = <&kp BSPC>, <&kp DEL>;
                 };
 
-                td1: tap_dance_1 {
+                td1: TAB_ESC{
                 compatible = "zmk,behavior-tap-dance";
                 #binding-cells = <0>;
                 tapping-term-ms = <200>;
                 bindings = <&kp TAB>, <&kp ESC>;
+                };
+
+                td2: CAPS_SHIFT {
+                compatible = "zmk,behavior-tap-dance";
+                #binding-cells = <0>;
+                tapping-term-ms = <200>;
+                bindings = <&kp CAPS>, <&kp LSHFT>;
+                };
+
+                td3: QUOTE_SHIFT {
+                compatible = "zmk,behavior-tap-dance";
+                #binding-cells = <0>;
+                tapping-term-ms = <200>;
+                bindings = <&kp SQT>, <&kp RSHFT>;
                 };
         };
 
@@ -41,12 +55,12 @@
                 default_layer {
 // -----------------------------------------------------------------------------------------
 // |  TAB/ESC |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U   |  I  |  O  |  P  | BKSP/DEL |
-// | CAPS |  A  |  S  |  D  |  F  |  G  |   |  H  |  J   |  K  |  L  |  ;  |  '   |
+// | CAPS/SHIFT |  A  |  S  |  D  |  F  |  G  |   |  H  |  J   |  K  |  L  |  ;  |  '/SHIFT   |
 // | CTRL |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M   |  ,  |  .  |  /  | ALT  |
 //                    | SHIFT | SPC | LWR |   | RSE | ENT  |   SHIFT |
                         bindings = <
    &td1   &kp Q &kp W &kp E &kp R &kp T   &kp Y &kp U  &kp I     &kp O   &kp P    &td0 
-   &kp CAPSLOCK &kp A &kp S &kp D &kp F &kp G   &kp H &kp J  &kp K     &kp L   &kp SEMI &kp SQT
+   &td2  &kp A &kp S &kp D &kp F &kp G   &kp H &kp J  &kp K     &kp L   &kp SEMI &td3 
    &kp LCTRL &kp Z &kp X &kp C &kp V &kp B   &kp N &kp M  &kp COMMA &kp DOT &kp FSLH &kp RALT
                   &kp LSHFT &kp SPACE &mo 1  &mo 2 &kp RET  &kp RSHFT
                         >;
