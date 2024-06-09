@@ -9,33 +9,72 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
+        behaviors {
+                td0: BSPC_DEL{
+                compatible = "zmk,behavior-tap-dance";
+                #binding-cells = <0>;
+                tapping-term-ms = <175>;
+                bindings = <&kp BSPC>, <&kp DEL>;
+                };
+
+                td1: TAB_ESC{
+                compatible = "zmk,behavior-tap-dance";
+                #binding-cells = <0>;
+                tapping-term-ms = <200>;
+                bindings = <&kp TAB>, <&kp ESC>;
+                };
+
+                td2: CAPS_SHIFT {
+                compatible = "zmk,behavior-tap-dance";
+                #binding-cells = <0>;
+                tapping-term-ms = <200>;
+                bindings = <&kp LSHFT>, <&kp CAPS>;
+                };
+
+                td3: QUOTE_SHIFT {
+                compatible = "zmk,behavior-tap-dance";
+                #binding-cells = <0>;
+                tapping-term-ms = <200>;
+                bindings = <&kp RSHFT>, <&kp SQT>;
+                };
+        };
+
+        //combos {
+          //      compatible = "zmk,combos";
+            //    combo_esc {
+        //                timeout-ms = <50>;
+        //             key-positions = <1 2>;
+        //                bindings = <&kp ESC>;
+        //        };
+        //};
+
+
         keymap {
                 compatible = "zmk,keymap";
-
                 default_layer {
 // -----------------------------------------------------------------------------------------
-// |  TAB |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U   |  I  |  O  |  P  | BKSP |
-// | CAPS |  A  |  S  |  D  |  F  |  G  |   |  H  |  J   |  K  |  L  |  ;  |  '   |
-// | CTRL |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M   |  ,  |  .  |  /  | ESC  |
-//                    | SHIFT | SPC | LWR |   | RSE | ENT  | ALT |
+// |  TAB/ESC |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U   |  I  |  O  |  P  | BKSP |
+// | CAPS/SHIFT |  A  |  S  |  D  |  F  |  G  |   |  H  |Q  J   |  K  |  L  |  ;  |  '/SHIFT   |
+// | CTRL |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M   |  ,  |  .  |  /  | DEL  |
+//                    | ALT | SPC | LWR |   | RSE | ENT  |   WIN |
                         bindings = <
-   &kp TAB   &kp Q &kp W &kp E &kp R &kp T   &kp Y &kp U  &kp I     &kp O   &kp P    &kp BSPC
-   &kp CAPSLOCK &kp A &kp S &kp D &kp F &kp G   &kp H &kp J  &kp K     &kp L   &kp SEMI &kp SQT
-   &kp LCTRL &kp Z &kp X &kp C &kp V &kp B   &kp N &kp M  &kp COMMA &kp DOT &kp FSLH &kp ESC
-                  &kp LSHFT &kp SPACE &mo 1  &mo 2 &kp RET  &kp RALT
+   &td1   &kp Q &kp W &kp E &kp R &kp T   &kp Y &kp U  &kp I     &kp O   &kp P    &kp BSPC
+   &td2  &kp A &kp S &kp D &kp F &kp G   &kp H &kp J  &kp K     &kp L   &kp SEMI &td3 
+   &kp LCTRL &kp Z &kp X &kp C &kp V &kp B   &kp N &kp M  &kp COMMA &kp DOT &kp FSLH &kp DEL
+                  &kp LALT &kp SPACE &mo 1  &mo 2 &kp RET  &kp RGUI
                         >;
                 };
                 lower_layer {
 // -----------------------------------------------------------------------------------------
-// |  TAB |  F1  |  F2  |  F3  |  F4  |  F5  |   |  F6  |  F7  |  F8  |  F9  |  F10  | BKSP |
-// |  CAPS|   1  |  2  |  3  |  4  |  5      |   |  6   |   7  |   8  |   9  |    0  |      |
-// |  CTRL| BTCLR| BT1 | BT2 | BT3 | BT4     |   | HOME | LFT  | DWN  |  UP  | RGT   |   END|
-//                    | SHIFT | SPC |    |   |   | ENT | ALT |
+// |  |1  |  2  |  3  |  4  |  5  | 6  |   7  |  8  |  9  |    0   |             | DEL   |
+// |  |F1|   F2  |  F3  |  F4  |  F5 | F6 |   F7  |  F8  |  F9  |  HOME |  UP    | END   |
+// |  | BTCLR| BT1 | BT2 | BT3 | BT4||      |     |    | INS |  LEFT    | DOWN   | RIGHT |
+//                    | LALT | SPC |    |  |   | 0 |   ENT |
                         bindings = <
-   &kp TAB  &kp F1  &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp BSPC
-   &kp CAPSLOCK &kp N1 &kp N2 &kp N3 &kp N4  &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &trans
-   &kp LCTRL &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3  &kp HOME &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp END
-                                    &kp LSHFT &kp SPACE  &trans              &trans  &kp RET  &kp RALT
+   &trans &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp DEL
+   &trans &kp F1 &kp F2 &kp F3 &kp F4  &kp F5 &kp F6 &kp F7 &kp F8 &kp HOME &kp UP &kp END
+   &trans &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &trans &trans &kp INS &kp LEFT &kp DOWN &kp RIGHT
+                                    &kp LALT &kp SPACE  &trans           &trans  &trans &trans  
                         >;
                 };
 
@@ -52,5 +91,9 @@
                              &kp LSHFT &kp SPACE &trans         &trans  &kp RET  &kp RALT
                         >;
                 };
+
+                
+                
+                
         };
 };
