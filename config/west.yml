@@ -3,7 +3,7 @@ manifest:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
     - name: feat/pointers-move-scroll
-      url-base: https://github.com/petejohanson/zmk/tree/feat/pointers-move-scroll
+      url-base: https://github.com/zmkfirmware/zmk/pull/2027
     # Additional modules containing boards/shields/custom code can be listed here as well
     # See https://docs.zephyrproject.org/3.2.0/develop/west/manifest.html#projects
   projects:
