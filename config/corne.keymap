@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+#define U_MOUSE_MOVE_MAX 1400 
+
+
 #include <dt-bindings/zmk/mouse.h>
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
