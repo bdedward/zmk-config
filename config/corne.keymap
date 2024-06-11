@@ -11,7 +11,8 @@
 #include <dt-bindings/zmk/bt.h>
 #include <behaviors/mouse_keys.dtsi>
 
-ZMK_MOUSE_DEFAULT_MOVE_VAL 2600
+#undef ZMK_MOUSE_DEFAULT_MOVE_VAL
+#define ZMK_MOUSE_DEFAULT_MOVE_VAL 2600
 
 
 
