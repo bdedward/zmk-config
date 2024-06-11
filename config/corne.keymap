@@ -5,10 +5,11 @@
  */
 
 //#include <dt-bindings/zmk/mouse.h>
-#include <behaviors/mouse_keys.dtsi>
+
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
+#include <behaviors/mouse_keys.dtsi>
 
 / {
         behaviors {
@@ -94,7 +95,6 @@
                              &kp LSHFT &kp SPACE &trans         &trans  &kp RET  &kp RALT
                         >;
                 };
-
                 3 {
 // -----------------------------------------------------------------------------------------
 // |  |1  |  2  |  3  |  4  |  5  | 6  |   KC_MS_WH_UP  |  KC_MS_UP  |  9  |    0   |             | DEL   |
