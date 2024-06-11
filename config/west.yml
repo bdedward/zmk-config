@@ -1,7 +1,7 @@
 manifest:
   remotes:
-    - name: zmkfirmware
-      url-base: https://github.com/zmkfirmware
+    #- name: zmkfirmware
+    #  url-base: https://github.com/zmkfirmware
     - name: feat/pointers-move-scroll
       url-base: https://github.com/petejohanson
     # Additional modules containing boards/shields/custom code can be listed here as well
