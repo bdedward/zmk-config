@@ -9,7 +9,7 @@ manifest:
   projects:
     - name: zmk
       #remote: zmkfirmware
-      remote: zmk
+      remote: feat/pointers-move-scroll
       revision: feat/pointers-move-scroll
       import: app/west.yml
   self:
