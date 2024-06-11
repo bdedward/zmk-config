@@ -12,7 +12,7 @@
 #include <behaviors/mouse_keys.dtsi>
 
 #undef ZMK_MOUSE_DEFAULT_MOVE_VAL
-#define ZMK_MOUSE_DEFAULT_MOVE_VAL 1400
+#define ZMK_MOUSE_DEFAULT_MOVE_VAL 1700
 
 
 
