@@ -104,7 +104,7 @@
    &trans &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &msc SCRL_UP &mmv MOVE_UP &kp N9 &kp N0 &kp DEL
    &trans &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &mmv MOVE_LEFT &mmv MOVE_DOWN &mmv MOVE_RIGHT &kp HOME &kp UP &kp END
    &trans &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &msc SCRL_DOWN &trans &kp INS &kp LEFT &kp DOWN &kp RIGHT
-                                    &kp LALT &kp SPACE  &trans           &mkp LCLK  &mkp RCLK &mkp RCLK
+                                    &kp LALT &kp SPACE  &trans           &mkp LCLK  &mkp MCLK &mkp RCLK
                         >;
                 };
                 
