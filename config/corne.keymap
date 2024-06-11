@@ -4,6 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
+
+#include <dt-bindings/zmk/mouse.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/bt.h>
+#include <behaviors/mouse_keys.dtsi>
+
 #define U_MOUSE_MOVE_MAX 2000
 #undef MOVE_UP
 #undef MOVE_DOWN
@@ -17,11 +24,6 @@
 	time-to-max-speed-ms = <400>;             /* <--- How long time until max speed is reached (default: 500) */
 };
 
-#include <dt-bindings/zmk/mouse.h>
-#include <behaviors.dtsi>
-#include <dt-bindings/zmk/keys.h>
-#include <dt-bindings/zmk/bt.h>
-#include <behaviors/mouse_keys.dtsi>
 
 / {
         behaviors {
