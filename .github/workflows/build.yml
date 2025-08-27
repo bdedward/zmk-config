@@ -146,17 +146,17 @@ jobs:
           echo ">>> ROOT: $GITHUB_WORKSPACE"
           find . -maxdepth 2 -type f
 
-      # Upload Left UF2
+      # … after your Build Left/Right steps …
+
       - name: Upload corne_left.uf2
         uses: actions/upload-artifact@v4
         with:
           name: corne_left.uf2
-          path: build-left/zephyr/zephyr.uf2
+          path: zmk/app/build-left/zephyr/zmk.uf2
 
-      # Upload Right UF2
       - name: Upload corne_right.uf2
         uses: actions/upload-artifact@v4
         with:
           name: corne_right.uf2
-          path: build-right/zephyr/zephyr.uf2
+          path: zmk/app/build-right/zephyr/zmk.uf2
 
