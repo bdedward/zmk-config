@@ -39,6 +39,11 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip install west
+      - name: Install Zephyr Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pyelftools
+
 
       - name: Cache Zephyr SDK
         id: cache-zephyr-sdk
