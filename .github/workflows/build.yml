@@ -7,15 +7,17 @@ on:
     branches: [ master ]
 
 env:
+  # Pick an SDK version matching Zephyr 3.5.0
   ZEPHYR_SDK_VERSION: 0.17.4
-  ZEPHYR_SDK_INSTALL_DIR: /opt/zephyr-sdk
+  # Install SDK into the runner’s home so the runner user can read it
+  ZEPHYR_SDK_INSTALL_DIR: ${{ github.workspace }}/zephyr-sdk
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout your config repo
+      # 1) Checkout config
       - uses: actions/checkout@v3
         name: Checkout config
 
@@ -25,14 +27,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      # 3a) Cache APT lists
+      # 3) Cache APT lists & archives so apt-get is fast
       - uses: actions/cache@v3
         name: Cache APT lists
         with:
           path: /var/lib/apt/lists
           key: ${{ runner.os }}-apt-lists
 
-      # 3b) Cache APT archives
       - uses: actions/cache@v3
         name: Cache APT archives
         with:
@@ -50,22 +51,22 @@ jobs:
             device-tree-compiler python3-setuptools \
             wget file unzip
 
-      # 5) Cache pip packages
+      # 5) Cache pip downloads
       - uses: actions/cache@v3
         name: Cache pip
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip
 
-      # 6) Install West & pyelftools
-      - name: Install West & Python deps
+      # 6) Install West & Zephyr Python deps
+      - name: Install West & pyelftools
         run: |
           python3 -m pip install --upgrade pip
           pip install west pyelftools
 
-      # 7) Restore Zephyr SDK (or miss)
-      - uses: actions/cache@v3
-        id: restore-sdk
+      # 7) Restore Zephyr SDK cache (or miss)
+      - id: restore-sdk
+        uses: actions/cache@v3
         name: Restore Zephyr SDK
         with:
           path: ${{ env.ZEPHYR_SDK_INSTALL_DIR }}
@@ -77,28 +78,27 @@ jobs:
       - name: Install Zephyr SDK
         if: steps.restore-sdk.outputs.cache-hit != 'true'
         run: |
-          wget \
-            https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VERSION}/zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64.tar.xz
-          sudo mkdir -p $ZEPHYR_SDK_INSTALL_DIR
-          sudo tar xf zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64.tar.xz \
+          wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VERSION}/zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64.tar.xz
+          mkdir -p $ZEPHYR_SDK_INSTALL_DIR
+          tar xf zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64.tar.xz \
             -C $ZEPHYR_SDK_INSTALL_DIR --strip-components=1
           cd $ZEPHYR_SDK_INSTALL_DIR
-          sudo ./setup.sh -h -c -t all
+          ./setup.sh -h -c -t all
 
-      # 9) Save Zephyr SDK for next runs
+      # 9) Save Zephyr SDK for future runs
       - uses: actions/cache@v3
         name: Save Zephyr SDK
         with:
           path: ${{ env.ZEPHYR_SDK_INSTALL_DIR }}
           key: ${{ runner.os }}-zephyr-sdk-v${{ env.ZEPHYR_SDK_VERSION }}
 
-      # 10) Export Zephyr SDK env vars
+      # 10) Export SDK env vars for West/CMake
       - name: Export Zephyr SDK env
         run: |
-          echo ZEPHYR_SDK_INSTALL_DIR=${ZEPHYR_SDK_INSTALL_DIR} >> $GITHUB_ENV
-          echo ZEPHYR_TOOLCHAIN_VARIANT=zephyr >> $GITHUB_ENV
+          echo "ZEPHYR_SDK_INSTALL_DIR=${ZEPHYR_SDK_INSTALL_DIR}" >> $GITHUB_ENV
+          echo "ZEPHYR_TOOLCHAIN_VARIANT=zephyr" >> $GITHUB_ENV
 
-      # 11) Cache ccache
+      # 11) Cache ccache for faster rebuilds
       - uses: actions/cache@v3
         name: Cache ccache
         with:
@@ -107,7 +107,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ccache-
 
-      # 12) Enable ccache
+      # 12) Enable ccache in Zephyr builds
       - name: Enable ccache
         run: |
           echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
@@ -115,24 +115,23 @@ jobs:
 
       # 13) Clone ZMK firmware from main
       - name: Clone ZMK firmware
-        run: |
-          git clone --depth 1 --branch main https://github.com/zmkfirmware/zmk.git zmk
+        run: git clone --depth 1 --branch main https://github.com/zmkfirmware/zmk.git zmk
 
-      # 14) Init West & pull modules
+      # 14) Init & update modules with West
       - name: Initialize ZMK with West
         run: |
           cd zmk
           west init -l app
           west update
 
-      # 14) Patch picolibc for mutex & lock conflicts
+      # 15) Patch picolibc to remove conflicting definitions
       - name: Patch picolibc
         run: |
           PICOLIBC=zmk/zephyr/lib/libc/picolibc/libc-hooks.c
           sed -i 's|^K_MUTEX_DEFINE(__lock___libc_recursive_mutex);|// disabled K_MUTEX_DEFINE|g' $PICOLIBC
           sed -i '/^void __retarget_lock_/,/^}/s|^|// |' $PICOLIBC
 
-      # 15) Build Left Half (Peripheral)
+      # 16) Build Left Half (peripheral)
       - name: Build Left Half
         run: |
           cd zmk/app
@@ -141,7 +140,7 @@ jobs:
             -DSHIELD="corne_left nice_view_adapter nice_view" \
             -DCONFIG_ZMK_SPLIT=y
 
-      # 16) Build Right Half (Central + USB HID)
+      # 17) Build Right Half (central + USB HID)
       - name: Build Right Half
         run: |
           cd zmk/app
@@ -152,15 +151,14 @@ jobs:
             -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
             -DCONFIG_ZMK_USB=y
 
-
-      # 18) Upload Left UF2
+      # 18) Upload corne_left.uf2
       - uses: actions/upload-artifact@v4
         name: Upload corne_left.uf2
         with:
           name: corne_left.uf2
           path: build-left/zephyr/zephyr.uf2
 
-      # 19) Upload Right UF2
+      # 19) Upload corne_right.uf2
       - uses: actions/upload-artifact@v4
         name: Upload corne_right.uf2
         with:
