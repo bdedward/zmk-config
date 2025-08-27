@@ -2,4 +2,35 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout config
+        uses: actions/checkout@v3
+
+      - name: Init ZMK
+        run: |
+          west init -l zmk/app
+          west update
+
+      - name: Build Left (Peripheral)
+        run: |
+          west build -d build-left -b nice_nano_v2 -- \
+            -DZMK_CONFIG=../../zmk-config/config \
+            -DSHIELD=corne_left nice_view_adapter nice_view \
+            -DCONFIG_ZMK_SPLIT_ROLE_PERIPHERAL=y
+
+      - name: Build Right (Central)
+        run: |
+          west build -d build-right -b nice_nano_v2 -- \
+            -DZMK_CONFIG=../../zmk-config/config \
+            -DSHIELD=corne_right nice_view_adapter nice_view \
+            -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
+            -DCONFIG_ZMK_USB=y
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: firmware
+          path: |
+            build-left/zephyr/zephyr.uf2
+            build-right/zephyr/zephyr.uf2
