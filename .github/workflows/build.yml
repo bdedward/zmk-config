@@ -125,19 +125,14 @@ jobs:
           west init -l app
           west update
 
-      # 15) Patch picolibc for mutex & lock conflicts
+      # 14) Patch picolibc for mutex & lock conflicts
       - name: Patch picolibc
         run: |
-          sed -i 's|^K_MUTEX_DEFINE(__lock___libc_recursive_mutex);|// disabled K_MUTEX_DEFINE|g' \
-            zmk/zephyr/lib/libc/picolibc/libc-hooks.c
-          sed -i '/void __retarget_lock_init_recursive/,/^}/s|^|// |' \
-            zmk/zephyr/lib/libc/picolibc/libc-hooks.c
-          sed -i '/void __retarget_lock_acquire_recursive/,/^}/s|^|// |' \
-            zmk/zephyr/lib/libc/picolibc/libc-hooks.c
-          sed -i '/void __retarget_lock_release_recursive/,/^}/s|^|// |' \
-            zmk/zephyr/lib/libc/picolibc/libc-hooks.c
+          PICOLIBC=zmk/zephyr/lib/libc/picolibc/libc-hooks.c
+          sed -i 's|^K_MUTEX_DEFINE(__lock___libc_recursive_mutex);|// disabled K_MUTEX_DEFINE|g' $PICOLIBC
+          sed -i '/^void __retarget_lock_/,/^}/s|^|// |' $PICOLIBC
 
-      # 16) Build Left Half (Peripheral)
+      # 15) Build Left Half (Peripheral)
       - name: Build Left Half
         run: |
           cd zmk/app
@@ -146,7 +141,7 @@ jobs:
             -DSHIELD="corne_left nice_view_adapter nice_view" \
             -DCONFIG_ZMK_SPLIT=y
 
-      # 17) Build Right Half (Central + USB HID)
+      # 16) Build Right Half (Central + USB HID)
       - name: Build Right Half
         run: |
           cd zmk/app
@@ -156,6 +151,7 @@ jobs:
             -DCONFIG_ZMK_SPLIT=y \
             -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
             -DCONFIG_ZMK_USB=y
+
 
       # 18) Upload Left UF2
       - uses: actions/upload-artifact@v4
