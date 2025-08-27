@@ -151,16 +151,25 @@ jobs:
             -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
             -DCONFIG_ZMK_USB=y
 
-      # 18) Upload corne_left.uf2
-      - uses: actions/upload-artifact@v4
-        name: Upload corne_left.uf2
+      # … after your build steps …
+
+      # DEBUG: list everything so we can see where zephyr.uf2 landed
+      - name: Dump workspace tree
+        run: |
+          echo ">>> ROOT: $GITHUB_WORKSPACE"
+          find . -maxdepth 2 -type f
+
+      # Upload Left UF2
+      - name: Upload corne_left.uf2
+        uses: actions/upload-artifact@v4
         with:
           name: corne_left.uf2
           path: build-left/zephyr/zephyr.uf2
 
-      # 19) Upload corne_right.uf2
-      - uses: actions/upload-artifact@v4
-        name: Upload corne_right.uf2
+      # Upload Right UF2
+      - name: Upload corne_right.uf2
+        uses: actions/upload-artifact@v4
         with:
           name: corne_right.uf2
           path: build-right/zephyr/zephyr.uf2
+
