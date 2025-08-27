@@ -4,71 +4,80 @@ on:
   push:
     branches: [ master ]
   pull_request:
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout your zmk-config (this repo)
+      # 1. Checkout your config repo
       - name: Checkout config
         uses: actions/checkout@v3
 
-      # 2. Install Python and system deps
-      - name: Setup Python & Install Dependencies
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+      # 2. Install system deps and West
       - name: Install build tools & West
         run: |
           sudo apt-get update
           sudo apt-get install --yes \
             ninja-build gperf ccache dfu-util device-tree-compiler \
-            wget python3-setuptools
+            python3-pip python3-setuptools wget unzip file
           python3 -m pip install --upgrade pip west
 
-      # 3. Clone ZMK firmware from main
+      # 3. Install Zephyr SDK (v0.16.x)
+      - name: Install Zephyr SDK
+        run: |
+          ZEPHYR_SDK_VERSION=0.16.2
+          wget https://github.com/zephyrproject-rtos/zephyr-sdk/releases/download/v${ZEPHYR_SDK_VERSION}/zephyr-sdk-${ZEPHYR_SDK_VERSION}-setup.run
+          chmod +x zephyr-sdk-${ZEPHYR_SDK_VERSION}-setup.run
+          ./zephyr-sdk-${ZEPHYR_SDK_VERSION}-setup.run -- -d /opt/zephyr-sdk
+          echo "ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk" >> $GITHUB_ENV
+
+      # 4. Clone ZMK firmware
       - name: Clone ZMK Firmware
         run: |
-          git clone https://github.com/zmkfirmware/zmk.git zmk
+          git clone --depth 1 --branch master https://github.com/zmkfirmware/zmk.git zmk
 
-      # 4. Init West & pull down all ZMK modules
-      - name: Initialize ZMK with West
+      # 5. Init and update via West
+      - name: Init ZMK with West
         run: |
           cd zmk
           west init -l app
           west update
-          cd app
 
-      # 5a. Build the left half (peripheral)
+      # 6a. Build Left (Peripheral)
       - name: Build Left (Peripheral)
         run: |
           cd zmk/app
-          west build -d ../../build-left -b nice_nano_v2 -- \
+          west build -d ../../build-left \
+            -b nice_nano_v2 \
+            -- \
             -DZMK_CONFIG=../../../../config \
-            -DSHIELD=corne_left nice_view_adapter nice_view \
+            -DSHIELD="corne_left nice_view_adapter nice_view" \
             -DCONFIG_ZMK_SPLIT_ROLE_PERIPHERAL=y
 
-      # 5b. Build the right half (central + USB HID)
+      # 6b. Build Right (Central + USB HID)
       - name: Build Right (Central)
         run: |
           cd zmk/app
-          west build -d ../../build-right -b nice_nano_v2 -- \
+          west build -d ../../build-right \
+            -b nice_nano_v2 \
+            -- \
             -DZMK_CONFIG=../../../../config \
-            -DSHIELD=corne_right nice_view_adapter nice_view \
+            -DSHIELD="corne_right nice_view_adapter nice_view" \
             -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
             -DCONFIG_ZMK_USB=y
 
-      # 6. Upload both UF2s as distinct artifacts
+      # 7. Upload Left UF2
       - name: Upload Left UF2
         uses: actions/upload-artifact@v4
         with:
           name: corne_left.uf2
           path: build-left/zephyr/zephyr.uf2
 
+      # 8. Upload Right UF2
       - name: Upload Right UF2
         uses: actions/upload-artifact@v4
         with:
           name: corne_right.uf2
           path: build-right/zephyr/zephyr.uf2
-
