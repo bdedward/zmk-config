@@ -124,4 +124,4 @@ jobs:
 
       # 14) Upload Right UF2 artifact
       - name: Upload corne_right.uf2
-        uses: actions/upload-artifact
+        uses: actions/upload-artifact@v4
