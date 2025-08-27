@@ -1,40 +1,74 @@
-on: [push, pull_request, workflow_dispatch]
+name: Build Corne Split Firmware
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. Checkout your zmk-config (this repo)
       - name: Checkout config
         uses: actions/checkout@v3
 
-      - name: Init ZMK
+      # 2. Install Python and system deps
+      - name: Setup Python & Install Dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install build tools & West
         run: |
-          west init -l zmk/app
-          west update
+          sudo apt-get update
+          sudo apt-get install --yes \
+            ninja-build gperf ccache dfu-util device-tree-compiler \
+            wget python3-setuptools
+          python3 -m pip install --upgrade pip west
 
+      # 3. Clone ZMK firmware from main
+      - name: Clone ZMK Firmware
+        run: |
+          git clone https://github.com/zmkfirmware/zmk.git zmk
+
+      # 4. Init West & pull down all ZMK modules
+      - name: Initialize ZMK with West
+        run: |
+          cd zmk
+          west init -l app
+          west update
+          cd app
+
+      # 5a. Build the left half (peripheral)
       - name: Build Left (Peripheral)
         run: |
-          west build -d build-left -b nice_nano_v2 -- \
-            -DZMK_CONFIG=../../zmk-config/config \
+          cd zmk/app
+          west build -d ../../build-left -b nice_nano_v2 -- \
+            -DZMK_CONFIG=../../../../config \
             -DSHIELD=corne_left nice_view_adapter nice_view \
             -DCONFIG_ZMK_SPLIT_ROLE_PERIPHERAL=y
 
+      # 5b. Build the right half (central + USB HID)
       - name: Build Right (Central)
         run: |
-          west build -d build-right -b nice_nano_v2 -- \
-            -DZMK_CONFIG=../../zmk-config/config \
+          cd zmk/app
+          west build -d ../../build-right -b nice_nano_v2 -- \
+            -DZMK_CONFIG=../../../../config \
             -DSHIELD=corne_right nice_view_adapter nice_view \
             -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
             -DCONFIG_ZMK_USB=y
 
+      # 6. Upload both UF2s as distinct artifacts
       - name: Upload Left UF2
         uses: actions/upload-artifact@v4
         with:
-          name: corne_left.uf2       # unique per-job artifact name
+          name: corne_left.uf2
           path: build-left/zephyr/zephyr.uf2
 
       - name: Upload Right UF2
         uses: actions/upload-artifact@v4
         with:
-          name: corne_right.uf2      # unique per-job artifact name
+          name: corne_right.uf2
           path: build-right/zephyr/zephyr.uf2
+
