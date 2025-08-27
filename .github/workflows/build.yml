@@ -27,19 +27,6 @@ jobs:
         with:
           python-version: '3.x'
 
-      # 3) Cache APT lists & archives so apt-get is fast
-      - uses: actions/cache@v3
-        name: Cache APT lists
-        with:
-          path: /var/lib/apt/lists
-          key: ${{ runner.os }}-apt-lists
-
-      - uses: actions/cache@v3
-        name: Cache APT archives
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-archives
-
       # 4) Install system deps
       - name: Install system dependencies
         run: |
