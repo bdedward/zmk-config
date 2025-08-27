@@ -7,7 +7,6 @@ on:
     branches: [ master ]
 
 env:
-  # Match this SDK version to Zephyr 3.5.0
   ZEPHYR_SDK_VERSION: 0.17.4
 
 jobs:
@@ -15,50 +14,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout your config repo  
       - name: Checkout config
         uses: actions/checkout@v3
 
-      # 2) Setup Python (includes pip)
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      # 3) Install system dependencies for Zephyr & ZMK
-      - name: Install apt packages
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install --yes \
             ninja-build gperf ccache dfu-util device-tree-compiler \
             python3-setuptools wget file unzip
 
-      # 4) Cache pip downloads
       - name: Cache pip
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip
-          restore-keys: |
-            ${{ runner.os }}-pip
 
-      # 5) Install West
       - name: Install West
         run: |
           python3 -m pip install --upgrade pip
           pip install west
 
-      # 6) Cache the Zephyr SDK install directory
       - name: Cache Zephyr SDK
         id: cache-zephyr-sdk
         uses: actions/cache@v3
         with:
           path: /opt/zephyr-sdk
           key: ${{ runner.os }}-zephyr-sdk-v${{ env.ZEPHYR_SDK_VERSION }}
-          restore-keys: |
-            ${{ runner.os }}-zephyr-sdk
+          restore-keys: ${{ runner.os }}-zephyr-sdk
 
-      # 7) Install Zephyr SDK if cache miss
       - name: Install Zephyr SDK
         if: steps.cache-zephyr-sdk.outputs.cache-hit != 'true'
         run: |
@@ -69,59 +58,54 @@ jobs:
           echo "ZEPHYR_SDK_INSTALL_DIR=$(pwd)" >> $GITHUB_ENV
           echo "ZEPHYR_TOOLCHAIN_VARIANT=zephyr" >> $GITHUB_ENV
 
-      # 8) Cache ccache between builds
       - name: Cache ccache
         uses: actions/cache@v3
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-ccache-${{ hashFiles('config/**') }}
-          restore-keys: |
-            ${{ runner.os }}-ccache
+          restore-keys: ${{ runner.os }}-ccache
 
-      # 9) Enable ccache for Zephyr builds
       - name: Enable ccache
         run: |
           echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
           echo "ZEPHYR_CCACHE=1" >> $GITHUB_ENV
 
-      # 10) Clone ZMK firmware from main
       - name: Clone ZMK firmware
         run: |
           git clone --depth 1 --branch main https://github.com/zmkfirmware/zmk.git zmk
 
-      # 11) Initialize West & pull in modules
       - name: Initialize ZMK with West
         run: |
           cd zmk
           west init -l app
           west update
 
-      # 12a) Build Left Half (Peripheral)
-      - name: Build Left (Peripheral)
+      - name: Build Left Half (Peripheral)
         run: |
           cd zmk/app
           west build -d ../../build-left -b nice_nano_v2 -- \
-            -DZMK_CONFIG=../../../../config \
+            -DZMK_CONFIG=../../config \
             -DSHIELD="corne_left nice_view_adapter nice_view" \
-            -DCONFIG_ZMK_SPLIT_ROLE_PERIPHERAL=y
+            -DCONFIG_ZMK_SPLIT=y
 
-      # 12b) Build Right Half (Central + USB HID)
-      - name: Build Right (Central + USB HID)
+      - name: Build Right Half (Central + USB HID)
         run: |
           cd zmk/app
           west build -d ../../build-right -b nice_nano_v2 -- \
-            -DZMK_CONFIG=../../../../config \
+            -DZMK_CONFIG=../../config \
             -DSHIELD="corne_right nice_view_adapter nice_view" \
+            -DCONFIG_ZMK_SPLIT=y \
             -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
             -DCONFIG_ZMK_USB=y
 
-      # 13) Upload Left UF2 artifact
       - name: Upload corne_left.uf2
         uses: actions/upload-artifact@v4
         with:
           name: corne_left.uf2
-          path: zmk/app/build-left/zephyr/zephyr.uf2
+          path: build-left/zephyr/zephyr.uf2
 
-      # 14) Upload Right UF2 artifact
       - name: Upload corne_right.uf2
         uses: actions/upload-artifact@v4
+        with:
+          name: corne_right.uf2
+          path: build-right/zephyr/zephyr.uf2
