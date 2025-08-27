@@ -15,113 +15,130 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout your config
-      - name: Checkout config
-        uses: actions/checkout@v3
+      # 1) Checkout your config repo
+      - uses: actions/checkout@v3
+        name: Checkout config
 
-      # 2. Setup Python
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      # 2) Setup Python
+      - uses: actions/setup-python@v4
+        name: Setup Python
         with:
           python-version: '3.x'
 
-      # 3a. Cache APT lists
-      - name: Cache APT lists
-        uses: actions/cache@v3
+      # 3a) Cache APT lists
+      - uses: actions/cache@v3
+        name: Cache APT lists
         with:
           path: /var/lib/apt/lists
           key: ${{ runner.os }}-apt-lists
-      # 3b. Cache APT archives
-      - name: Cache APT archives
-        uses: actions/cache@v3
+
+      # 3b) Cache APT archives
+      - uses: actions/cache@v3
+        name: Cache APT archives
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-archives
 
-      # 4. Install system deps
+      # 4) Install system deps
       - name: Install system dependencies
         run: |
           if [ -z "$(ls -A /var/lib/apt/lists)" ]; then
             sudo apt-get update
           fi
           sudo apt-get install --yes \
-            ninja-build gperf ccache dfu-util device-tree-compiler \
-            python3-setuptools wget file unzip
+            ninja-build gperf ccache dfu-util \
+            device-tree-compiler python3-setuptools \
+            wget file unzip
 
-      # 5. Cache pip
-      - name: Cache pip
-        uses: actions/cache@v3
+      # 5) Cache pip packages
+      - uses: actions/cache@v3
+        name: Cache pip
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip
 
-      # 6. Install West & pyelftools
+      # 6) Install West & pyelftools
       - name: Install West & Python deps
         run: |
           python3 -m pip install --upgrade pip
           pip install west pyelftools
 
-      # 7. Cache Zephyr SDK
-      - name: Cache Zephyr SDK
-        id: cache-zephyr-sdk
-        uses: actions/cache@v3
+      # 7) Restore Zephyr SDK (or miss)
+      - uses: actions/cache@v3
+        id: restore-sdk
+        name: Restore Zephyr SDK
         with:
           path: ${{ env.ZEPHYR_SDK_INSTALL_DIR }}
           key: ${{ runner.os }}-zephyr-sdk-v${{ env.ZEPHYR_SDK_VERSION }}
           restore-keys: |
             ${{ runner.os }}-zephyr-sdk-
 
-      # 8. Install Zephyr SDK on cache miss
+      # 8) Install Zephyr SDK on cache miss
       - name: Install Zephyr SDK
-        if: steps.cache-zephyr-sdk.outputs.cache-hit != 'true'
+        if: steps.restore-sdk.outputs.cache-hit != 'true'
         run: |
-          wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VERSION}/zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64.tar.xz
+          wget \
+            https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VERSION}/zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64.tar.xz
           sudo mkdir -p $ZEPHYR_SDK_INSTALL_DIR
           sudo tar xf zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64.tar.xz \
             -C $ZEPHYR_SDK_INSTALL_DIR --strip-components=1
           cd $ZEPHYR_SDK_INSTALL_DIR
           sudo ./setup.sh -h -c -t all
 
-      # 9. Export Zephyr SDK vars
+      # 9) Save Zephyr SDK for next runs
+      - uses: actions/cache@v3
+        name: Save Zephyr SDK
+        with:
+          path: ${{ env.ZEPHYR_SDK_INSTALL_DIR }}
+          key: ${{ runner.os }}-zephyr-sdk-v${{ env.ZEPHYR_SDK_VERSION }}
+
+      # 10) Export Zephyr SDK env vars
       - name: Export Zephyr SDK env
         run: |
-          echo "ZEPHYR_SDK_INSTALL_DIR=${ZEPHYR_SDK_INSTALL_DIR}" >> $GITHUB_ENV
-          echo "ZEPHYR_TOOLCHAIN_VARIANT=zephyr" >> $GITHUB_ENV
+          echo ZEPHYR_SDK_INSTALL_DIR=${ZEPHYR_SDK_INSTALL_DIR} >> $GITHUB_ENV
+          echo ZEPHYR_TOOLCHAIN_VARIANT=zephyr >> $GITHUB_ENV
 
-      # 10. Cache ccache
-      - name: Cache ccache
-        uses: actions/cache@v3
+      # 11) Cache ccache
+      - uses: actions/cache@v3
+        name: Cache ccache
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-ccache-${{ hashFiles('config/**') }}
           restore-keys: |
             ${{ runner.os }}-ccache-
 
-      # 11. Enable ccache
+      # 12) Enable ccache
       - name: Enable ccache
         run: |
           echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
           echo "ZEPHYR_CCACHE=1" >> $GITHUB_ENV
 
-      # 12. Clone ZMK firmware
+      # 13) Clone ZMK firmware from main
       - name: Clone ZMK firmware
-        run: git clone --depth 1 --branch main https://github.com/zmkfirmware/zmk.git zmk
+        run: |
+          git clone --depth 1 --branch main https://github.com/zmkfirmware/zmk.git zmk
 
-      # 13. Init & update with West
+      # 14) Init West & pull modules
       - name: Initialize ZMK with West
         run: |
           cd zmk
           west init -l app
           west update
 
-      # 14. Patch picolibc to avoid duplicate __lock___libc_recursive_mutex
-      - name: Patch picolibc mutex conflict
+      # 15) Patch picolibc for mutex & lock conflicts
+      - name: Patch picolibc
         run: |
-          sed -i 's|^K_MUTEX_DEFINE(__lock___libc_recursive_mutex);|// disabled to avoid conflicting definition|g' \
+          sed -i 's|^K_MUTEX_DEFINE(__lock___libc_recursive_mutex);|// disabled K_MUTEX_DEFINE|g' \
+            zmk/zephyr/lib/libc/picolibc/libc-hooks.c
+          sed -i '/void __retarget_lock_init_recursive/,/^}/s|^|// |' \
+            zmk/zephyr/lib/libc/picolibc/libc-hooks.c
+          sed -i '/void __retarget_lock_acquire_recursive/,/^}/s|^|// |' \
+            zmk/zephyr/lib/libc/picolibc/libc-hooks.c
+          sed -i '/void __retarget_lock_release_recursive/,/^}/s|^|// |' \
             zmk/zephyr/lib/libc/picolibc/libc-hooks.c
 
-      # 15a. Build Left (Peripheral)
-      - name: Build Left (Peripheral)
+      # 16) Build Left Half (Peripheral)
+      - name: Build Left Half
         run: |
           cd zmk/app
           west build -d ../../build-left -b nice_nano_v2 -- \
@@ -129,8 +146,8 @@ jobs:
             -DSHIELD="corne_left nice_view_adapter nice_view" \
             -DCONFIG_ZMK_SPLIT=y
 
-      # 15b. Build Right (Central + USB HID)
-      - name: Build Right (Central + USB HID)
+      # 17) Build Right Half (Central + USB HID)
+      - name: Build Right Half
         run: |
           cd zmk/app
           west build -d ../../build-right -b nice_nano_v2 -- \
@@ -140,16 +157,16 @@ jobs:
             -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y \
             -DCONFIG_ZMK_USB=y
 
-      # 16. Upload Left UF2
-      - name: Upload corne_left.uf2
-        uses: actions/upload-artifact@v4
+      # 18) Upload Left UF2
+      - uses: actions/upload-artifact@v4
+        name: Upload corne_left.uf2
         with:
           name: corne_left.uf2
           path: build-left/zephyr/zephyr.uf2
 
-      # 17. Upload Right UF2
-      - name: Upload corne_right.uf2
-        uses: actions/upload-artifact@v4
+      # 19) Upload Right UF2
+      - uses: actions/upload-artifact@v4
+        name: Upload corne_right.uf2
         with:
           name: corne_right.uf2
           path: build-right/zephyr/zephyr.uf2
