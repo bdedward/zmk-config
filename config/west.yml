@@ -1,16 +1,15 @@
 manifest:
   remotes:
-    #- name: zmkfirmware
-    #  url-base: https://github.com/zmkfirmware
-    - name: feat/pointers-move-scroll
-      url-base: https://github.com/petejohanson
-    # Additional modules containing boards/shields/custom code can be listed here as well
-    # See https://docs.zephyrproject.org/3.2.0/develop/west/manifest.html#projects
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
+    - name: zephyrproject
+      url-base: https://github.com/zephyrproject-rtos
+
   projects:
     - name: zmk
-      #remote: zmkfirmware
-      remote: feat/pointers-move-scroll
-      revision: feat/pointers-move-scroll
+      remote: zmkfirmware
+      revision: main
       import: app/west.yml
+
   self:
-    path: config
+    path: .
