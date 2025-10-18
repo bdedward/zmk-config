@@ -8,3 +8,11 @@
         height = <64>;
     };
 };
+
+/ {
+    display: display0 {
+        compatible = "zmk,display";
+        label = "SSD1306";
+        // No widget declarations here
+    };
+};
