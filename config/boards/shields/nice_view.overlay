@@ -1,15 +1,21 @@
 &spi1 {
     status = "okay";
-    cs-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;  // D1 as CS
+    cs-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;  // D1 (GPIO 2) used for CS
     pinctrl-0 = <&spi1_default>;
     pinctrl-names = "default";
 
     display@0 {
-        compatible = "ssd1306";
+        compatible = "solomon,ssd1306fb-spi";
         reg = <0>;
-        spi-max-frequency = <10000000>;
         label = "SSD1306";
-        height = <64>;
+        spi-max-frequency = <10000000>;
         width = <128>;
+        height = <64>;
+        reset-gpios = <&gpio0 3 GPIO_ACTIVE_LOW>;  // Optional: D2 (GPIO 3) for reset
     };
+};
+
+&display {
+    compatible = "zmk,display";
+    label = "SSD1306";
 };
