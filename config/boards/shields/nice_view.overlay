@@ -1,6 +1,5 @@
 &spi1 {
     status = "okay";
-    cs-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;  // D1 (GPIO 2) used for CS
     pinctrl-0 = <&spi1_default>;
     pinctrl-names = "default";
 
@@ -11,7 +10,8 @@
         spi-max-frequency = <10000000>;
         width = <128>;
         height = <64>;
-        reset-gpios = <&gpio0 3 GPIO_ACTIVE_LOW>;  // Optional: D2 (GPIO 3) for reset
+        // Optional: reset-gpios if you have a reset pin wired
+        // reset-gpios = <&gpio0 3 GPIO_ACTIVE_LOW>;
     };
 };
 
