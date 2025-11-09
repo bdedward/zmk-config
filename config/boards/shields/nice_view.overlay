@@ -1,21 +1,22 @@
 &spi1 {
     status = "okay";
+    cs-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;  /* CS -> D1 (P0.06 / 006) */
     pinctrl-0 = <&spi1_default>;
     pinctrl-names = "default";
 
     display@0 {
-        compatible = "solomon,ssd1306fb-spi";
+        compatible = "niceview,ls011b7dh03";
         reg = <0>;
-        label = "SSD1306";
-        spi-max-frequency = <10000000>;
-        width = <128>;
-        height = <64>;
-        // Optional: reset-gpios if you have a reset pin wired
-        // reset-gpios = <&gpio0 3 GPIO_ACTIVE_LOW>;
+        label = "NICEVIEW";
+        spi-max-frequency = <8000000>;
+        width = <160>;
+        height = <68>;
+        /* Optional: if you wire a reset pin, set it here */
+        /* reset-gpios = <&gpio0 7 GPIO_ACTIVE_LOW>; */
     };
 };
 
 &display {
     compatible = "zmk,display";
-    label = "SSD1306";
+    label = "NICEVIEW";
 };
